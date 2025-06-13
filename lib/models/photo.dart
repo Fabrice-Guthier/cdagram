@@ -1,5 +1,4 @@
 class Photo {
-
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -13,7 +12,6 @@ class Photo {
   final String url;
 
   const Photo({
-    
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -25,6 +23,5 @@ class Photo {
     required this.description,
     required this.author,
     required this.url,
-
   });
 }

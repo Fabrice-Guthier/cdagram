@@ -1,51 +1,37 @@
-import 'dart:convert';
 import 'package:cdagram/models/photo.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:faker/faker.dart';
 
-/// Récupère une liste de vraies photos aléatoires depuis l'API Unsplash.
-///
-/// Gère la pagination car l'API limite à 30 photos par appel.
-///
-/// @param desiredCount Le nombre total de photos souhaitées.
-/// @return Un Future qui se résoudra en une liste d'objets [Photo].
-Future<List<Photo>> fetchRealRandomPhotos({int desiredCount = 100}) async {
-  // REMPLACE PAR TA VRAIE CLÉ API UNSPLASH
-  final String? unsplashApiKey = dotenv.env['UNSPLASH_API_KEY'];
+List<Photo> generatePhotos({int count = 100}) {
+  // On invoque notre PNJ "faker"
+  final faker = Faker();
 
-  if (unsplashApiKey == dotenv.env['UNSPLASH_API_KEY']) {
-    throw Exception('Erreur : Tu dois renseigner ta clé API Unsplash !');
-  }
+  // List.generate est un constructeur puissant pour créer des listes à la volée.
+  return List.generate(count, (index) {
+    // Pour la cohérence des données, on s'assure que la date de mise à jour
+    // est toujours après la date de création.
+    final creationDate = faker.date.dateTime(minYear: 2020, maxYear: 2024);
 
-  final List<Photo> allPhotos = [];
-  const int maxCountPerRequest = 30;
-  int requestsNeeded = (desiredCount / maxCountPerRequest)
-      .ceil(); // Calcule le nombre d'appels nécessaires
+    return Photo(
+      // --- Attributs d'Identification ---
+      id: faker.guid.guid(), // Génère un ID unique de type GUID
+      createdAt: creationDate,
+      updatedAt: faker.date.dateTime(minYear: creationDate.year, maxYear: 2025),
 
-  for (int i = 0; i < requestsNeeded; i++) {
-    final response = await http.get(
-      Uri.parse(
-        'https://api.unsplash.com/photos/random?count=$maxCountPerRequest&client_id=$unsplashApiKey',
-      ),
+      // --- Attributs Visuels ---
+      width: faker.randomGenerator.integer(4000, min: 1000),
+      height: faker.randomGenerator.integer(3000, min: 800),
+      color: '#${faker.randomGenerator.integer(0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
+      // --- Statistiques de "Popularité" ---
+      likes: faker.randomGenerator.integer(5000),
+      downloads: faker.randomGenerator.integer(50000, min: 500),
+
+      // --- Attributs Descriptifs ---
+      description: faker.lorem.sentence(), // Le "lore" de l'objet
+      author: faker.person.name(), // Le nom du "crafter"
+      // On utilise un service d'images placeholder pour avoir de vraies images
+      // Le "seed" garantit une image différente à chaque fois.
+      url:
+          'https://picsum.photos/seed/${faker.randomGenerator.string(10, min: 5)}/400/600',
     );
-
-    if (response.statusCode == 200) {
-      // Le retour est une liste de JSON
-      final List<dynamic> jsonList = jsonDecode(response.body);
-      // On parse chaque objet JSON en objet Photo et on l'ajoute à notre liste
-      allPhotos.addAll(
-        jsonList
-            .map((jsonItem) => Photo.fromJson(jsonItem as Map<String, dynamic>))
-            .toList(),
-      );
-    } else {
-      // Si une seule requête échoue, on arrête tout.
-      throw Exception(
-        'Échec du chargement des photos depuis Unsplash. Code: ${response.statusCode}',
-      );
-    }
-  }
-
-  // On retourne la liste complète (qui peut en contenir un peu plus que `desiredCount`)
-  return allPhotos.take(desiredCount).toList();
+  });
 }

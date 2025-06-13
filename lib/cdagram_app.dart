@@ -1,6 +1,5 @@
 import 'package:cdagram/main.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 class CdagramApp extends StatelessWidget {
   const CdagramApp({super.key});
@@ -29,6 +28,7 @@ class CdagramApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
